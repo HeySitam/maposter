@@ -473,67 +473,148 @@ for (final key in requiredKeys) {
 
 **Port from Python:** `get_coordinates()` function (lines 319-370 of `create_map_poster.py`)
 
+---
+
+**Datasource directory convention (applies to all datasources, v1.3 onwards):**
+
+Every datasource is split into `remote/` and `local/` subdirectories. Each subdirectory contains an `abstract interface class` contract and a concrete `*Impl` class:
+
+```
+data/datasources/
+  remote/
+    nominatim_remote_datasource.dart          # abstract interface class
+    nominatim_remote_datasource_impl.dart     # Dio + RateLimiter
+  local/
+    nominatim_local_datasource.dart           # abstract interface class
+    nominatim_local_datasource_impl.dart      # Hive Box<dynamic>
+    theme_local_datasource.dart               # abstract interface class
+    theme_local_datasource_impl.dart          # rootBundle asset loader
+```
+
+**Rules:**
+- Repositories depend on **interfaces only** — never on Hive/Dio types directly
+- Hive `Box` is injected into the local datasource impl via the provider — not passed to the repo
+- `providers.dart` types all datasource providers against their interfaces
+- Future datasources (Overpass) follow the same pattern: `overpass_remote_datasource.dart` + impl
+
+---
+
+**Remote datasource (Nominatim API):**
+
 ```dart
-/// A simple sequential request queue to enforce Nominatim's 1 req/sec policy.
-/// Using Future.delayed alone does NOT work — concurrent calls each delay
-/// independently and can still fire simultaneously.
-class RateLimiter {
-  final Duration _minInterval;
-  Future<void> _lastRequest = Future.value();
-
-  RateLimiter(this._minInterval);
-
-  Future<T> run<T>(Future<T> Function() fn) {
-    final next = _lastRequest
-        .then((_) => Future.delayed(_minInterval))
-        .then((_) => fn());
-    _lastRequest = next.then((_) {}, onError: (_) {});
-    return next;
-  }
+// remote/nominatim_remote_datasource.dart
+abstract interface class NominatimRemoteDatasource {
+  Future<CityCoordinates> searchCity(String city, String country);
 }
 
-class NominatimDatasource {
-  NominatimDatasource(this._dio, this._limiter);
+// remote/nominatim_remote_datasource_impl.dart
+class NominatimRemoteDatasourceImpl implements NominatimRemoteDatasource {
+  NominatimRemoteDatasourceImpl(this._dio, this._rateLimiter);
 
-  final Dio _dio;   // built via buildNominatimDio() — BaseOptions with User-Agent header pre-set
-  final RateLimiter _limiter;
+  final Dio _dio;         // built via buildNominatimDio()
+  final RateLimiter _rateLimiter;
 
-  Future<CityCoordinates> getCoordinates(String city, String country) {
-    return _limiter.run(() async {
-      // Dio GET — base URL already set in BaseOptions, User-Agent in headers
-      final response = await _dio.get<List<dynamic>>(
-        '/search',
-        queryParameters: {'q': '$city,$country', 'format': 'json', 'limit': 1, 'addressdetails': 1},
-      );
-      final data = response.data;
-      if (data == null || data.isEmpty) {
-        throw GeocodingException('City not found: $city, $country');
-      }
-      // Parse using if-case pattern for safe JSON extraction
-      final first = data.first as Map<String, dynamic>;
-      if (first case {'lat': String lat, 'lon': String lon, 'display_name': String displayName}) {
-        final address = first['address'] as Map<String, dynamic>?;
+  @override
+  Future<CityCoordinates> searchCity(String city, String country) =>
+      _rateLimiter.run(() async {
+        final response = await _dio.get<List<dynamic>>(
+          '/search',
+          queryParameters: {'q': '$city,$country', 'format': 'json', 'limit': 1, 'addressdetails': 1},
+        );
+        final results = response.data;
+        if (results == null || results.isEmpty) {
+          throw GeocodingException('No results found for "$city, $country"');
+        }
+        final data = results.first as Map<String, dynamic>;
+        final address = data['address'] as Map<String, dynamic>?;
         return CityCoordinates(
-          latitude: double.parse(lat),
-          longitude: double.parse(lon),
-          displayName: displayName,
-          city: address?['city'] as String? ?? address?['town'] as String?,
+          latitude: double.parse(data['lat'] as String),
+          longitude: double.parse(data['lon'] as String),
+          displayName: data['display_name'] as String,
+          city: address?['city'] as String? ??
+              address?['town'] as String? ??
+              address?['village'] as String?,
           country: address?['country'] as String?,
         );
-      }
-      throw GeocodingException('Unexpected Nominatim response format');
-    });
+      });
+}
+```
+
+**Local datasource (Hive cache):**
+
+```dart
+// local/nominatim_local_datasource.dart
+abstract interface class NominatimLocalDatasource {
+  CityCoordinates? get(String key);
+  Future<void> put(String key, CityCoordinates coordinates);
+}
+
+// local/nominatim_local_datasource_impl.dart
+class NominatimLocalDatasourceImpl implements NominatimLocalDatasource {
+  NominatimLocalDatasourceImpl(this._box);
+  final Box<dynamic> _box;
+
+  @override
+  CityCoordinates? get(String key) {
+    final cached = _box.get(key) as Map?;
+    if (cached == null) return null;
+    return CityCoordinates(
+      latitude: cached['latitude'] as double,
+      longitude: cached['longitude'] as double,
+      displayName: cached['displayName'] as String,
+      city: cached['city'] as String?,
+      country: cached['country'] as String?,
+    );
+  }
+
+  @override
+  Future<void> put(String key, CityCoordinates coordinates) => _box.put(key, {
+    'latitude': coordinates.latitude,
+    'longitude': coordinates.longitude,
+    'displayName': coordinates.displayName,
+    'city': coordinates.city,
+    'country': coordinates.country,
+  });
+}
+```
+
+**Repository (cache-aside, depends on interfaces only):**
+
+```dart
+class GeocodingRepositoryImpl implements GeocodingRepository {
+  const GeocodingRepositoryImpl(this._remote, this._local);
+
+  final NominatimRemoteDatasource _remote;
+  final NominatimLocalDatasource _local;
+
+  @override
+  Future<CityCoordinates> getCoordinates(String city, String country) async {
+    final key = 'geocoding_${city.toLowerCase().trim()}_${country.toLowerCase().trim()}';
+    final cached = _local.get(key);
+    if (cached != null) return cached;
+    final result = await _remote.searchCity(city, country);
+    await _local.put(key, result);
+    return result;
   }
 }
 ```
 
-Caching lives in the repository implementation (`GeocodingRepositoryImpl`), which wraps the datasource and checks Hive before calling through.
+**Hive init in `main()`:**
+
+```dart
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await Hive.openBox<dynamic>(AppConstants.geocodingCacheBoxName);
+  runApp(const ProviderScope(child: App()));
+}
+```
 
 > **Correction:** The original draft used `http.get(...)` and `jsonDecode`. The actual implementation uses `Dio` with `buildNominatimDio()` which pre-sets `BaseOptions` (base URL, User-Agent, Accept header, timeouts) and attaches `_AppInterceptor` (wraps `DioException` → typed `NetworkException`) and `PrettyDioLogger` (debug mode only). `response.data` is already decoded by Dio — no `jsonDecode` call needed.
 
 > **Correction:** The original draft used `await Future.delayed(Duration(seconds: 1))` directly. This does NOT enforce rate limiting for concurrent calls — each call delays independently and all fire at the same time. The `RateLimiter` class above chains requests sequentially, matching the Python `time.sleep(1)` behaviour.
 
-**Things to learn:** `dio` package (`Dio`, `BaseOptions`, `Interceptor`), Hive setup and box operations, async/await patterns, Nominatim API response format (`addressdetails=1` for city/country), Future chaining for sequential queuing.
+**Things to learn:** `dio` package (`Dio`, `BaseOptions`, `Interceptor`), `abstract interface class` pattern in Dart, Hive box operations, async/await patterns, Nominatim API response format (`addressdetails=1` for city/country), Future chaining for sequential queuing.
 
 ---
 
@@ -1606,7 +1687,7 @@ Large cities (15-20km radius) can return 10-100 MB of JSON. Keep in mind:
 - [ ] v1.0 — Upfront: set `minSdkVersion 24`, iOS deployment target 13.0, add all permissions to manifests
 - [x] v1.1 — Project setup: Flutter project, folder structure, pubspec.yaml, Riverpod, `flutter_lints`, `freezed`, `dio`, `AppColors`/`AppStyles` design system
 - [x] v1.2 — Domain models: `MapTheme` (with `id`, `ColorConverter`, validation), `CityCoordinates`, `RoadSegment`, `MapFeature`, `MapData` — all as `abstract class` (freezed 3.x)
-- [ ] v1.3 — Geocoding service: Nominatim HTTP, sequential `RateLimiter`, Hive caching
+- [x] v1.3 — Geocoding service: Nominatim HTTP, sequential `RateLimiter`, Hive caching
 - [ ] v1.4 — Overpass API: query builder with `compensatedDist`, response parser (nodes/ways/relations + multipolygon assembly), background `compute()` parsing
 - [ ] v1.5 — Mercator projection: lat/lon to screen coords, bounding box, aspect ratio crop
 - [ ] v1.6 — Rendering engine: `CustomPainter` with all 6 layers, **path batching for roads**, `TextStyle.letterSpacing`, `Color.withValues()`

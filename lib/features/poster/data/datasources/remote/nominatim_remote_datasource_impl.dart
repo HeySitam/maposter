@@ -1,23 +1,25 @@
 import 'package:dio/dio.dart';
 import 'package:map_to_poster/core/errors/app_exception.dart';
 import 'package:map_to_poster/core/network/rate_limiter.dart';
+import 'package:map_to_poster/features/poster/data/datasources/remote/nominatim_remote_datasource.dart';
 import 'package:map_to_poster/features/poster/domain/entities/city_coordinates.dart';
 
-class NominatimDatasource {
-  NominatimDatasource(this._dio, this._rateLimiter);
+class NominatimRemoteDatasourceImpl implements NominatimRemoteDatasource {
+  NominatimRemoteDatasourceImpl(this._dio, this._rateLimiter);
 
   final Dio _dio;
   final RateLimiter _rateLimiter;
 
+  @override
   Future<CityCoordinates> searchCity(String city, String country) =>
       _rateLimiter.run(() async {
         final response = await _dio.get<List<dynamic>>(
           '/search',
           queryParameters: {
-            'city': city,
-            'country': country,
-            'format': 'jsonv2',
+            'q': '$city,$country',
+            'format': 'json',
             'limit': 1,
+            'addressdetails': 1,
           },
         );
 
@@ -27,12 +29,16 @@ class NominatimDatasource {
         }
 
         final data = results.first as Map<String, dynamic>;
+        final address = data['address'] as Map<String, dynamic>?;
+
         return CityCoordinates(
           latitude: double.parse(data['lat'] as String),
           longitude: double.parse(data['lon'] as String),
           displayName: data['display_name'] as String,
-          city: city,
-          country: country,
+          city: address?['city'] as String? ??
+              address?['town'] as String? ??
+              address?['village'] as String?,
+          country: address?['country'] as String?,
         );
       });
 }

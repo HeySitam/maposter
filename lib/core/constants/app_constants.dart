@@ -9,4 +9,6 @@ abstract final class AppConstants {
 
   static const String themesAssetPath = 'assets/themes/';
   static const String postersDir = 'map_to_poster/posters';
+
+  static const String geocodingCacheBoxName = 'geocoding_cache';
 }

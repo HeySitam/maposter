@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:map_to_poster/core/constants/app_constants.dart';
 import 'package:map_to_poster/core/errors/app_exception.dart';
+import 'package:map_to_poster/features/poster/data/datasources/local/theme_local_datasource.dart';
 import 'package:map_to_poster/features/poster/domain/entities/map_theme.dart';
 
 const _themeIds = [
@@ -18,9 +19,10 @@ const _requiredKeys = [
   'road_secondary', 'road_tertiary', 'road_residential', 'road_default',
 ];
 
-class ThemeDatasource {
+class ThemeLocalDatasourceImpl implements ThemeLocalDatasource {
   final _cache = <String, MapTheme>{};
 
+  @override
   Future<List<MapTheme>> loadAll() async {
     if (_cache.isNotEmpty) return _cache.values.toList();
     for (final id in _themeIds) {
@@ -29,6 +31,7 @@ class ThemeDatasource {
     return _cache.values.toList();
   }
 
+  @override
   Future<MapTheme> loadTheme(String id) async {
     if (_cache.containsKey(id)) return _cache[id]!;
     final theme = await _load(id);
@@ -49,7 +52,6 @@ class ThemeDatasource {
         }
       }
 
-      // Inject id (derived from filename, not stored in JSON)
       json['id'] = id;
       return MapTheme.fromJson(json);
     } on AssetException {
