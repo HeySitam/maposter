@@ -1,20 +1,14 @@
-import 'package:map_to_poster/core/utils/mercator.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class CityCoordinates {
-  const CityCoordinates({
-    required this.city,
-    required this.country,
-    required this.latLon,
-    this.displayCity,
-    this.displayCountry,
-  });
+part 'city_coordinates.freezed.dart';
 
-  final String city;
-  final String country;
-  final LatLon latLon;
-  final String? displayCity;
-  final String? displayCountry;
-
-  String get label => displayCity ?? city;
-  String get countryLabel => displayCountry ?? country;
+@freezed
+abstract class CityCoordinates with _$CityCoordinates {
+  const factory CityCoordinates({
+    required double latitude,
+    required double longitude,
+    required String displayName,
+    String? city,
+    String? country,
+  }) = _CityCoordinates;
 }
