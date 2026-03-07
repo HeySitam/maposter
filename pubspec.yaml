@@ -1,0 +1,65 @@
+name: map_to_poster
+description: "Generate minimalist city map posters from OpenStreetMap data"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Immutable data classes & JSON
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+
+  # Networking
+  dio: ^5.8.0
+  pretty_dio_logger: ^1.4.0
+
+  # Local storage / caching
+  hive_flutter: ^1.1.0
+
+  # Fonts
+  google_fonts: ^6.2.1
+
+  # File system
+  path_provider: ^2.1.5
+
+  # Sharing & saving
+  share_plus: ^10.1.4
+  gal: ^2.3.1
+
+  # PDF export
+  pdf: ^3.11.2
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+  # Code generation
+  build_runner: ^2.4.15
+  freezed: ^3.0.0
+  json_serializable: ^6.9.4
+  riverpod_generator: ^2.6.3
+
+  # Riverpod linting
+  custom_lint: ^0.7.5
+  riverpod_lint: ^2.6.3
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/themes/
+
+  # Fonts are loaded at runtime via google_fonts package
