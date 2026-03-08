@@ -68,19 +68,19 @@ LatLonBounds _computeBounds(Map<int, LatLon> nodeMap) {
 }
 
 RoadType _roadTypeFrom(Object? highway) => switch (highway) {
-      'motorway' || 'motorway_link' => RoadType.motorway,
+      'motorway' || 'motorway_link' => .motorway,
       'trunk' ||
       'trunk_link' ||
       'primary' ||
       'primary_link' =>
-        RoadType.primary,
-      'secondary' || 'secondary_link' => RoadType.secondary,
-      'tertiary' || 'tertiary_link' => RoadType.tertiary,
+        .primary,
+      'secondary' || 'secondary_link' => .secondary,
+      'tertiary' || 'tertiary_link' => .tertiary,
       'residential' ||
       'living_street' ||
       'unclassified' =>
-        RoadType.residential,
-      _ => RoadType.unknown,
+        .residential,
+      _ => .unknown,
     };
 
 List<RoadSegment> _parseRoads(
@@ -110,12 +110,11 @@ List<RoadSegment> _parseRoads(
 
 bool _matchesFeatureType(Map<dynamic, dynamic> tags, FeatureType type) =>
     switch (type) {
-      FeatureType.water => tags['natural'] == 'water' ||
+      .water => tags['natural'] == 'water' ||
           tags['natural'] == 'bay' ||
           tags['natural'] == 'strait' ||
           tags['waterway'] == 'riverbank',
-      FeatureType.park =>
-        tags['leisure'] == 'park' || tags['landuse'] == 'grass',
+      .park => tags['leisure'] == 'park' || tags['landuse'] == 'grass',
     };
 
 List<_ResolvedWay> _resolveWays(
@@ -273,24 +272,24 @@ MapData _parseOverpassResponse(_ParseArgs args) {
   final bounds = _computeBounds(nodeMap);
 
   return switch (args.queryType) {
-    OverpassQueryType.roads => MapData(
+    .roads => MapData(
         roads: _parseRoads(elements, nodeMap),
         waterFeatures: const [],
         parkFeatures: const [],
         bounds: bounds,
       ),
-    OverpassQueryType.water => MapData(
+    .water => MapData(
         roads: const [],
         waterFeatures:
-            _parsePolygonFeatures(elements, nodeMap, wayLookup, FeatureType.water),
+            _parsePolygonFeatures(elements, nodeMap, wayLookup, .water),
         parkFeatures: const [],
         bounds: bounds,
       ),
-    OverpassQueryType.parks => MapData(
+    .parks => MapData(
         roads: const [],
         waterFeatures: const [],
         parkFeatures:
-            _parsePolygonFeatures(elements, nodeMap, wayLookup, FeatureType.park),
+            _parsePolygonFeatures(elements, nodeMap, wayLookup, .park),
         bounds: bounds,
       ),
   };
@@ -352,7 +351,7 @@ class OverpassRemoteDatasourceImpl implements OverpassRemoteDatasource {
     LatLon center,
     double radiusMeters,
   ) async {
-    final data = await _fetch(_roadsQuery(center, radiusMeters), OverpassQueryType.roads);
+    final data = await _fetch(_roadsQuery(center, radiusMeters), .roads);
     return data.roads;
   }
 
@@ -362,7 +361,7 @@ class OverpassRemoteDatasourceImpl implements OverpassRemoteDatasource {
     double radiusMeters,
   ) async {
     final data =
-        await _fetch(_waterQuery(center, radiusMeters), OverpassQueryType.water);
+        await _fetch(_waterQuery(center, radiusMeters), .water);
     return data.waterFeatures;
   }
 
@@ -372,7 +371,7 @@ class OverpassRemoteDatasourceImpl implements OverpassRemoteDatasource {
     double radiusMeters,
   ) async {
     final data =
-        await _fetch(_parksQuery(center, radiusMeters), OverpassQueryType.parks);
+        await _fetch(_parksQuery(center, radiusMeters), .parks);
     return data.parkFeatures;
   }
 }
