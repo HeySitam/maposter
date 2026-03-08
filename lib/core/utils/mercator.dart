@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/painting.dart';
+
 typedef LatLon = (double lat, double lon);
 typedef LatLonBounds = ({double north, double south, double east, double west});
 
@@ -42,4 +44,31 @@ abstract final class Mercator {
     double height,
   ) =>
       dist * (max(height, width) / min(height, width)) / 4;
+
+  /// Projects [coords] to screen [Offset]s that fit within [canvasSize].
+  ///
+  /// Uses [bounds] as the viewport — the NW corner maps to near (0, 0).
+  /// Preserves aspect ratio: the map fits fully inside the canvas with
+  /// possible blank space on one axis (letterbox / pillarbox).
+  static List<Offset> projectToScreen(
+    List<LatLon> coords,
+    Size canvasSize,
+    LatLonBounds bounds,
+  ) {
+    final origin = (bounds.north, bounds.west); // NW corner = (0, 0) in metre space
+
+    // Project SE corner to measure the full metre extent of the viewport
+    final (extentX, extentY) = project((bounds.south, bounds.east), origin);
+    // extentX > 0 (east of origin), extentY < 0 (south of origin)
+    final mercWidth = extentX;   // metres west→east
+    final mercHeight = -extentY; // metres north→south (negated to be positive)
+
+    // Fit the map inside the canvas without distortion
+    final scale = min(canvasSize.width / mercWidth, canvasSize.height / mercHeight);
+
+    return coords.map((coord) {
+      final (x, y) = project(coord, origin);
+      return Offset(x * scale, -y * scale); // negate Y: south → positive screen Y
+    }).toList();
+  }
 }
