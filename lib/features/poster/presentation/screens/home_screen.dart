@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:map_to_poster/core/constants/app_constants.dart';
 import 'package:map_to_poster/features/poster/presentation/notifiers/providers.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -13,6 +14,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _cityController = TextEditingController(text: 'Kolkata');
   final _countryController = TextEditingController(text: 'India');
   bool _loading = false;
+  bool _loadingOverpass = false;
 
   @override
   void dispose() {
@@ -46,6 +48,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  Future<void> _testOverpass() async {
+    setState(() => _loadingOverpass = true);
+    try {
+      final coords = await ref.read(
+        geocodingProvider((
+          city: _cityController.text.trim(),
+          country: _countryController.text.trim(),
+        )).future,
+      );
+      final mapData = await ref.read(
+        mapDataProvider((
+          center: (coords.latitude, coords.longitude),
+          radiusMeters: AppConstants.defaultRadiusMeters,
+        )).future,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Roads: ${mapData.roads.length} | '
+              'Water: ${mapData.waterFeatures.length} | '
+              'Parks: ${mapData.parkFeatures.length}',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loadingOverpass = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +93,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: .min,
             children: [
               TextField(
                 controller: _cityController,
@@ -67,10 +106,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _loading ? null : _testGeocoding,
+                onPressed: (_loading || _loadingOverpass) ? null : _testGeocoding,
                 child: const Text('Test Geocoding API'),
               ),
               if (_loading) ...[
+                const SizedBox(height: 16),
+                const CircularProgressIndicator(),
+              ],
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: (_loading || _loadingOverpass) ? null : _testOverpass,
+                child: const Text('Test Overpass API'),
+              ),
+              if (_loadingOverpass) ...[
                 const SizedBox(height: 16),
                 const CircularProgressIndicator(),
               ],
