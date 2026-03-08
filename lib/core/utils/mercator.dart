@@ -32,4 +32,14 @@ abstract final class Mercator {
   /// Overpass bbox string: south,west,north,east
   static String overpassBbox(LatLonBounds bounds) =>
       '${bounds.south},${bounds.west},${bounds.north},${bounds.east}';
+
+  /// Over-fetch radius to compensate for aspect-ratio crop.
+  /// Ported from Python: dist * (max(h,w) / min(h,w)) / 4
+  /// Use poster dimensions in any consistent unit (inches, px, etc.).
+  static double computeCompensatedDist(
+    double dist,
+    double width,
+    double height,
+  ) =>
+      dist * (max(height, width) / min(height, width)) / 4;
 }

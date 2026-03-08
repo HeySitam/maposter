@@ -8,5 +8,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox<dynamic>(AppConstants.geocodingCacheBoxName);
+  await Hive.openBox<dynamic>(AppConstants.overpassCacheBoxName);
   runApp(const ProviderScope(child: App()));
 }
