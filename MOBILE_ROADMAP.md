@@ -1684,13 +1684,13 @@ Large cities (15-20km radius) can return 10-100 MB of JSON. Keep in mind:
 ## Checklist
 
 ### v1 — Generate Poster + Export PNG/PDF
-- [ ] v1.0 — Upfront: set `minSdkVersion 24`, iOS deployment target 13.0, add all permissions to manifests
+- [x] v1.0 — Upfront: set `minSdkVersion 24`, iOS deployment target 13.0, add all permissions to manifests
 - [x] v1.1 — Project setup: Flutter project, folder structure, pubspec.yaml, Riverpod, `flutter_lints`, `freezed`, `dio`, `AppColors`/`AppStyles` design system
 - [x] v1.2 — Domain models: `MapTheme` (with `id`, `ColorConverter`, validation), `CityCoordinates`, `RoadSegment`, `MapFeature`, `MapData` — all as `abstract class` (freezed 3.x)
 - [x] v1.3 — Geocoding service: Nominatim HTTP, sequential `RateLimiter`, Hive caching
 - [x] v1.4 — Overpass API: query builder with `compensatedDist`, response parser (nodes/ways/relations + multipolygon assembly), background `compute()` parsing
 - [x] v1.5 — Mercator projection: lat/lon to screen coords, bounding box, aspect ratio crop
-- [ ] v1.6 — Rendering engine: `CustomPainter` with all 6 layers, **path batching for roads**, `TextStyle.letterSpacing`, `Color.withValues()`
+- [x] v1.6 — Rendering engine: `CustomPainter` with all 6 layers, **path batching for roads**, `TextStyle.letterSpacing`, `Color.withValues()`
 - [ ] v1.7 — Export system: PNG via `PictureRecorder` with OOM guard, PDF via `pdf` package, gallery save via `gal`, share
 - [ ] v1.8 — UI screens: home (`SearchBar`/`SearchAnchor`), poster preview, theme browser, export sheet
 - [ ] v1.9 — Tests: projection unit tests, golden tests for themes, Overpass parser tests

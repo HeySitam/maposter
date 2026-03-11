@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:map_to_poster/core/utils/mercator.dart';
 import 'package:map_to_poster/features/poster/data/datasources/local/overpass_local_datasource.dart';
 import 'package:map_to_poster/features/poster/data/datasources/remote/overpass_remote_datasource.dart';
@@ -11,7 +12,7 @@ class MapDataRepositoryImpl implements MapDataRepository {
   final OverpassLocalDatasource _local;
 
   @override
-  Future<MapData> fetchMapData(LatLon center, double radiusMeters) async {
+  Future<MapData> fetchMapData(LatLon center, double radiusMeters, {CancelToken? token}) async {
     final (lat, lon) = center;
 
     // Use the compensated radius for Overpass queries (default A3 portrait 12×16 in)
@@ -28,11 +29,11 @@ class MapDataRepositoryImpl implements MapDataRepository {
     final cachedWater = _local.getFeatures(waterKey);
     final cachedParks = _local.getFeatures(parksKey);
 
-    final roads = cachedRoads ?? await _remote.fetchRoads(center, compensated);
+    final roads = cachedRoads ?? await _remote.fetchRoads(center, compensated, token: token);
     final waterFeatures =
-        cachedWater ?? await _remote.fetchWaterFeatures(center, compensated);
+        cachedWater ?? await _remote.fetchWaterFeatures(center, compensated, token: token);
     final parkFeatures =
-        cachedParks ?? await _remote.fetchParkFeatures(center, compensated);
+        cachedParks ?? await _remote.fetchParkFeatures(center, compensated, token: token);
 
     // Persist any newly fetched data
     if (cachedRoads == null) await _local.putRoads(roadsKey, roads);

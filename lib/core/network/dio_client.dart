@@ -1,17 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:map_to_poster/core/constants/app_constants.dart';
 import 'package:map_to_poster/core/errors/app_exception.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-
-final _logger = PrettyDioLogger(
-  requestHeader: true,
-  requestBody: true,
-  responseBody: true,
-  responseHeader: false,
-  error: true,
-  compact: true,
-);
 
 Dio buildNominatimDio() => Dio(
       BaseOptions(
@@ -23,7 +12,7 @@ Dio buildNominatimDio() => Dio(
         connectTimeout: const Duration(seconds: AppConstants.networkTimeoutSeconds),
         receiveTimeout: const Duration(seconds: AppConstants.networkTimeoutSeconds),
       ),
-    )..interceptors.addAll([if (kDebugMode) _logger, _AppInterceptor()]);
+    )..interceptors.add(_AppInterceptor());
 
 Dio buildOverpassDio() => Dio(
       BaseOptions(
@@ -31,13 +20,24 @@ Dio buildOverpassDio() => Dio(
         connectTimeout: const Duration(seconds: AppConstants.networkTimeoutSeconds),
         receiveTimeout: const Duration(seconds: 60),
       ),
-    )..interceptors.addAll([if (kDebugMode) _logger, _AppInterceptor()]);
+    )..interceptors.add(_AppInterceptor());
 
 class _AppInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    final msg = err.message ?? err.type.name;
+    // Don't wrap cancellations — preserve DioExceptionType.cancel for callers
+    if (err.type == DioExceptionType.cancel) {
+      handler.next(err);
+      return;
+    }
     final status = err.response?.statusCode;
+    final msg = switch (status) {
+      429 => 'Too many requests — please wait and try again.',
+      502 => 'Server temporarily unavailable — please try again.',
+      504 => 'Request timed out — please try again.',
+      null => 'Network error (${err.type.name}).',
+      _ => 'Server error ($status) — please try again.',
+    };
     handler.reject(
       DioException(
         requestOptions: err.requestOptions,

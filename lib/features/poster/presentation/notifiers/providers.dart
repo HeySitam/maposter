@@ -63,8 +63,15 @@ final themeLocalDatasourceProvider = Provider<ThemeLocalDatasource>(
   (_) => ThemeLocalDatasourceImpl(),
 );
 
+final overpassRateLimiterProvider = Provider(
+  (_) => RateLimiter(minGap: const Duration(seconds: 2)),
+);
+
 final overpassRemoteDatasourceProvider = Provider<OverpassRemoteDatasource>(
-  (ref) => OverpassRemoteDatasourceImpl(ref.watch(overpassDioProvider)),
+  (ref) => OverpassRemoteDatasourceImpl(
+    ref.watch(overpassDioProvider),
+    ref.watch(overpassRateLimiterProvider),
+  ),
 );
 
 final overpassLocalDatasourceProvider = Provider<OverpassLocalDatasource>(

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:map_to_poster/core/errors/app_exception.dart';
+import 'package:map_to_poster/core/network/rate_limiter.dart';
 import 'package:map_to_poster/core/utils/mercator.dart';
 import 'package:map_to_poster/features/poster/data/datasources/remote/overpass_remote_datasource.dart';
 import 'package:map_to_poster/features/poster/domain/entities/map_data.dart';
@@ -298,15 +299,20 @@ MapData _parseOverpassResponse(_ParseArgs args) {
 // ── Datasource impl ───────────────────────────────────────────────────────────
 
 class OverpassRemoteDatasourceImpl implements OverpassRemoteDatasource {
-  OverpassRemoteDatasourceImpl(this._dio);
+  OverpassRemoteDatasourceImpl(this._dio, this._rateLimiter);
 
   final Dio _dio;
+  final RateLimiter _rateLimiter;
 
   String _roadsQuery(LatLon center, double radius) {
     final (lat, lon) = center;
+    const filter = r'^(motorway|motorway_link|trunk|trunk_link'
+        r'|primary|primary_link|secondary|secondary_link'
+        r'|tertiary|tertiary_link'
+        r'|residential|living_street|unclassified)$';
     return '[out:json][timeout:60];\n'
         '(\n'
-        '  way["highway"](around:$radius,$lat,$lon);\n'
+        '  way["highway"~"$filter"](around:$radius,$lat,$lon);\n'
         ');\n'
         'out body; >; out skel qt;';
   }
@@ -332,46 +338,70 @@ class OverpassRemoteDatasourceImpl implements OverpassRemoteDatasource {
         'out body; >; out skel qt;';
   }
 
-  Future<MapData> _fetch(String query, OverpassQueryType queryType) async {
-    final response = await _dio.post<String>(
-      '',
-      data: 'data=${Uri.encodeComponent(query)}',
-      options: Options(
-        contentType: Headers.formUrlEncodedContentType,
-        responseType: ResponseType.plain,
-      ),
-    );
-    final json = response.data;
-    if (json == null) throw const OverpassException('Empty response from Overpass');
-    return compute(_parseOverpassResponse, (json: json, queryType: queryType));
-  }
+  Future<MapData> _fetch(
+    String query,
+    OverpassQueryType queryType, {
+    CancelToken? token,
+  }) =>
+      _rateLimiter.run(() async {
+        const maxAttempts = 3;
+        for (var attempt = 0; attempt < maxAttempts; attempt++) {
+          try {
+            final response = await _dio.post<String>(
+              '',
+              data: 'data=${Uri.encodeComponent(query)}',
+              cancelToken: token,
+              options: Options(
+                contentType: Headers.formUrlEncodedContentType,
+                responseType: ResponseType.plain,
+              ),
+            );
+            final json = response.data;
+            if (json == null) throw const OverpassException('Empty response from Overpass');
+            return compute(_parseOverpassResponse, (json: json, queryType: queryType));
+          } on DioException catch (e) {
+            if (e.type == DioExceptionType.cancel) rethrow;
+            final status = e.response?.statusCode;
+            final retryable = status == 429 || status == 502 || status == 504;
+            if (retryable && attempt < maxAttempts - 1) {
+              await Future.delayed(Duration(seconds: 5 * (attempt + 1)));
+              continue;
+            }
+            rethrow;
+          }
+        }
+        throw const OverpassException('Overpass unavailable after retries');
+      });
 
   @override
   Future<List<RoadSegment>> fetchRoads(
     LatLon center,
-    double radiusMeters,
-  ) async {
-    final data = await _fetch(_roadsQuery(center, radiusMeters), .roads);
+    double radiusMeters, {
+    CancelToken? token,
+  }) async {
+    final data = await _fetch(_roadsQuery(center, radiusMeters), .roads, token: token);
     return data.roads;
   }
 
   @override
   Future<List<MapFeature>> fetchWaterFeatures(
     LatLon center,
-    double radiusMeters,
-  ) async {
+    double radiusMeters, {
+    CancelToken? token,
+  }) async {
     final data =
-        await _fetch(_waterQuery(center, radiusMeters), .water);
+        await _fetch(_waterQuery(center, radiusMeters), .water, token: token);
     return data.waterFeatures;
   }
 
   @override
   Future<List<MapFeature>> fetchParkFeatures(
     LatLon center,
-    double radiusMeters,
-  ) async {
+    double radiusMeters, {
+    CancelToken? token,
+  }) async {
     final data =
-        await _fetch(_parksQuery(center, radiusMeters), .parks);
+        await _fetch(_parksQuery(center, radiusMeters), .parks, token: token);
     return data.parkFeatures;
   }
 }

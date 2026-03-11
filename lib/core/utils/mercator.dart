@@ -53,8 +53,9 @@ abstract final class Mercator {
   static List<Offset> projectToScreen(
     List<LatLon> coords,
     Size canvasSize,
-    LatLonBounds bounds,
-  ) {
+    LatLonBounds bounds, {
+    double zoomFactor = 1.0,
+  }) {
     final origin = (bounds.north, bounds.west); // NW corner = (0, 0) in metre space
 
     // Project SE corner to measure the full metre extent of the viewport
@@ -63,12 +64,19 @@ abstract final class Mercator {
     final mercWidth = extentX;   // metres west→east
     final mercHeight = -extentY; // metres north→south (negated to be positive)
 
-    // Fit the map inside the canvas without distortion
-    final scale = min(canvasSize.width / mercWidth, canvasSize.height / mercHeight);
+    // Cover the full canvas — scale to the larger axis so no black edges remain.
+    // Overflow in the other axis is clipped by the canvas bounds.
+    // zoomFactor > 1 zooms in further from center (center-crop effect).
+    final scale = max(canvasSize.width / mercWidth, canvasSize.height / mercHeight)
+        * zoomFactor;
+
+    // Center the map within the canvas (letterbox / pillarbox offset)
+    final offsetX = (canvasSize.width - mercWidth * scale) / 2;
+    final offsetY = (canvasSize.height - mercHeight * scale) / 2;
 
     return coords.map((coord) {
       final (x, y) = project(coord, origin);
-      return Offset(x * scale, -y * scale); // negate Y: south → positive screen Y
+      return Offset(x * scale + offsetX, -y * scale + offsetY);
     }).toList();
   }
 }
