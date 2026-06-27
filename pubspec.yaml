@@ -1,46 +1,47 @@
-name: map_to_poster
-description: "Generate minimalist city map posters from OpenStreetMap data"
-publish_to: 'none'
-
-version: 1.0.0+1
+name: maposter
+description: >-
+  Turn a city name into a minimalist OpenStreetMap poster: geocoding, Overpass
+  map data, Mercator projection, CustomPainter rendering, and PNG/PDF export.
+version: 0.1.0
+repository: https://github.com/HeySitam/maposter
+issue_tracker: https://github.com/HeySitam/maposter/issues
+topics:
+  - maps
+  - openstreetmap
+  - poster
+  - cartography
 
 environment:
   sdk: ">=3.10.0 <4.0.0"
+  flutter: ">=3.41.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  # Map creation engine (in-repo package)
-  map_poster_engine:
-    path: packages/map_poster_engine
+  # Immutable data classes & JSON
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
 
-  # State management
-  flutter_riverpod: ^2.6.1
+  # Networking
+  dio: ^5.8.0
 
-  # Local storage / caching (backs the engine's HiveCacheStore)
-  hive_flutter: ^1.1.0
-
-  # Fonts (app shell typography in AppStyles)
+  # Fonts (rendering)
   google_fonts: ^6.2.1
 
-  # File system
-  path_provider: ^2.1.5
-
-  # Sharing & saving
-  share_plus: ^10.1.4
-  gal: ^2.3.1
-
-  cupertino_icons: ^1.0.8
+  # PDF export
+  pdf: ^3.11.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
 
-  # Riverpod linting
-  custom_lint: ^0.7.5
-  riverpod_lint: ^2.6.3
+  # Code generation
+  build_runner: ^2.4.15
+  freezed: ^3.0.0
+  json_serializable: ^6.9.4
 
 flutter:
-  uses-material-design: true
+  assets:
+    - assets/themes/

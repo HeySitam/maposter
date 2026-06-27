@@ -33,6 +33,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# This repo root is a published package — lock file is not committed.
+/pubspec.lock
+
 # Symbolication related
 app.*.symbols
 

@@ -1,0 +1,46 @@
+name: map_to_poster
+description: "Generate minimalist city map posters from OpenStreetMap data"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.10.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Map creation engine (the package this example demonstrates)
+  maposter:
+    path: ../
+
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Local storage / caching (backs the engine's HiveCacheStore)
+  hive_flutter: ^1.1.0
+
+  # Fonts (app shell typography in AppStyles)
+  google_fonts: ^6.2.1
+
+  # File system
+  path_provider: ^2.1.5
+
+  # Sharing & saving
+  share_plus: ^10.1.4
+  gal: ^2.3.1
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+  # Riverpod linting
+  custom_lint: ^0.7.5
+  riverpod_lint: ^2.6.3
+
+flutter:
+  uses-material-design: true
