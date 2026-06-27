@@ -1,6 +1,6 @@
 ## 0.1.2
 
-- Docs: fix the install snippet version in the README.
+- Docs: use a version-less install snippet in the README so it never goes stale.
 
 ## 0.1.1
 

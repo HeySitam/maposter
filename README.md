@@ -35,11 +35,11 @@ No state-management or storage dependency is forced on you, and caching is fully
 flutter pub add maposter
 ```
 
-Or add it to your `pubspec.yaml`:
+Or add it to your `pubspec.yaml` (see the [latest version](https://pub.dev/packages/maposter/install)):
 
 ```yaml
 dependencies:
-  maposter: ^0.1.2
+  maposter: <latest-version>
 ```
 
 ---
