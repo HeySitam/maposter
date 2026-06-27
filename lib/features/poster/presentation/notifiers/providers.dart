@@ -17,6 +17,7 @@ import 'package:map_to_poster/features/poster/data/datasources/remote/overpass_r
 import 'package:map_to_poster/features/poster/data/repositories/geocoding_repository_impl.dart';
 import 'package:map_to_poster/features/poster/data/repositories/map_data_repository_impl.dart';
 import 'package:map_to_poster/features/poster/data/repositories/theme_repository_impl.dart';
+import 'package:map_to_poster/features/poster/data/services/poster_exporter.dart';
 import 'package:map_to_poster/features/poster/domain/entities/city_coordinates.dart';
 import 'package:map_to_poster/features/poster/domain/entities/map_data.dart';
 import 'package:map_to_poster/features/poster/domain/entities/map_theme.dart';
@@ -123,4 +124,10 @@ final mapDataProvider =
   (ref, args) => ref
       .watch(mapDataRepositoryProvider)
       .fetchMapData(args.center, args.radiusMeters),
+);
+
+// ── Services ──────────────────────────────────────────────────────────────────
+
+final posterExporterProvider = Provider<PosterExporter>(
+  (_) => const PosterExporter(),
 );

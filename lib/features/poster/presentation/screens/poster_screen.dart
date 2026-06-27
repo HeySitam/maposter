@@ -4,6 +4,7 @@ import 'package:map_to_poster/features/poster/domain/entities/map_data.dart';
 import 'package:map_to_poster/features/poster/domain/entities/map_theme.dart';
 import 'package:map_to_poster/features/poster/presentation/notifiers/providers.dart';
 import 'package:map_to_poster/features/poster/presentation/painters/map_poster_painter.dart';
+import 'package:map_to_poster/features/poster/presentation/widgets/export_sheet.dart';
 
 class PosterScreen extends ConsumerWidget {
   const PosterScreen({
@@ -33,38 +34,72 @@ class PosterScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download_rounded, color: Colors.white),
+            tooltip: 'Export',
+            onPressed: () => _openExportSheet(context, ref),
+          ),
+        ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ref.watch(selectedThemeProvider).when(
-                  data: (theme) => Center(
-                    child: AspectRatio(
-                      aspectRatio: 3 / 4,
-                      child: CustomPaint(
-                        painter: MapPosterPainter(
-                          mapData: mapData,
-                          theme: theme,
-                          cityName: cityName,
-                          countryName: countryName,
-                          latitude: latitude,
-                          longitude: longitude,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ref.watch(selectedThemeProvider).when(
+                    data: (theme) => Center(
+                      child: AspectRatio(
+                        aspectRatio: 3 / 4,
+                        child: CustomPaint(
+                          painter: MapPosterPainter(
+                            mapData: mapData,
+                            theme: theme,
+                            cityName: cityName,
+                            countryName: countryName,
+                            latitude: latitude,
+                            longitude: longitude,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(
-                    child: Text(
-                      'Error loading theme: $e',
-                      style: const TextStyle(color: Colors.white),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(
+                      child: Text(
+                        'Error loading theme: $e',
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
-                ),
-          ),
-          const _ThemePickerBar(),
-        ],
+            ),
+            const _ThemePickerBar(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openExportSheet(BuildContext context, WidgetRef ref) {
+    final theme = ref.read(selectedThemeProvider).valueOrNull;
+    if (theme == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Theme still loading — try again.')),
+      );
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => ExportSheet(
+        mapData: mapData,
+        theme: theme,
+        cityName: cityName,
+        countryName: countryName,
+        latitude: latitude,
+        longitude: longitude,
       ),
     );
   }
