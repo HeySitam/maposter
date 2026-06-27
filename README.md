@@ -39,7 +39,7 @@ Or add it to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  maposter: ^0.1.0
+  maposter: ^0.1.2
 ```
 
 ---

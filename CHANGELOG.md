@@ -1,3 +1,7 @@
+## 0.1.2
+
+- Docs: fix the install snippet version in the README.
+
 ## 0.1.1
 
 - Widen the `google_fonts` constraint to `>=6.2.1 <9.0.0` so newer setups can
