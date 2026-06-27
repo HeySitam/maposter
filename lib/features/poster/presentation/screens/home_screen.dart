@@ -1,8 +1,6 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:map_to_poster/core/constants/app_constants.dart';
-import 'package:map_to_poster/core/errors/app_exception.dart';
+import 'package:map_poster_engine/map_poster_engine.dart';
 import 'package:map_to_poster/features/poster/presentation/notifiers/providers.dart';
 import 'package:map_to_poster/features/poster/presentation/screens/poster_screen.dart';
 
@@ -73,11 +71,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           country: _countryController.text.trim(),
         )).future,
       );
-      final mapData = await ref
-          .read(mapDataRepositoryProvider)
-          .fetchMapData(
+      final mapData = await ref.read(mapPosterEngineProvider).fetchMapData(
             (coords.latitude, coords.longitude),
-            AppConstants.defaultRadiusMeters,
             token: token,
           );
       if (mounted) {

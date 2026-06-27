@@ -4,10 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
-import 'package:map_to_poster/features/poster/domain/entities/map_data.dart';
-import 'package:map_to_poster/features/poster/domain/entities/map_theme.dart';
+import 'package:map_poster_engine/map_poster_engine.dart';
 import 'package:map_to_poster/features/poster/presentation/notifiers/providers.dart';
-import 'package:map_to_poster/features/poster/presentation/painters/map_poster_painter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -160,10 +158,11 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     return '${safeCity}_${widget.theme.id}_$stamp';
   }
 
-  Future<Uint8List> _renderPng() async {
-    final exporter = ref.read(posterExporterProvider);
-    return exporter.exportPng(_buildPainter(), ExportSheet.posterSize);
-  }
+  Future<Uint8List> _renderPng() =>
+      ref.read(mapPosterEngineProvider).exportPng(
+            _buildPainter(),
+            ExportSheet.posterSize,
+          );
 
   Future<void> _saveToGallery() async {
     final hasAccess = await Gal.hasAccess();
@@ -197,8 +196,9 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
 
   Future<void> _sharePdf() async {
     final png = await _renderPng();
-    final exporter = ref.read(posterExporterProvider);
-    final pdfBytes = await exporter.exportPdf(png, ExportSheet.posterSize);
+    final pdfBytes = await ref
+        .read(mapPosterEngineProvider)
+        .exportPdf(png, ExportSheet.posterSize);
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/${_baseFilename()}.pdf');
     await file.writeAsBytes(pdfBytes, flush: true);

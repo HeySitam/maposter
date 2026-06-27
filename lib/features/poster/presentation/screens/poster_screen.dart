@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:map_to_poster/features/poster/domain/entities/map_data.dart';
-import 'package:map_to_poster/features/poster/domain/entities/map_theme.dart';
+import 'package:map_poster_engine/map_poster_engine.dart';
 import 'package:map_to_poster/features/poster/presentation/notifiers/providers.dart';
-import 'package:map_to_poster/features/poster/presentation/painters/map_poster_painter.dart';
 import 'package:map_to_poster/features/poster/presentation/widgets/export_sheet.dart';
 
 class PosterScreen extends ConsumerWidget {

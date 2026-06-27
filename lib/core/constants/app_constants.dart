@@ -1,15 +1,7 @@
 abstract final class AppConstants {
-  static const String nominatimBaseUrl = 'https://nominatim.openstreetmap.org';
-  static const String overpassBaseUrl = 'https://overpass-api.de/api/interpreter';
+  /// Identifying User-Agent for the engine (required by Nominatim's policy).
   static const String userAgent = 'maptoposter-mobile/1.0 (dev.heysitam.map_to_poster)';
 
-  static const double defaultRadiusMeters = 18000;
-  static const int nominatimRateLimitMs = 1100;
-  static const int networkTimeoutSeconds = 30;
-
-  static const String themesAssetPath = 'assets/themes/';
-  static const String postersDir = 'map_to_poster/posters';
-
-  static const String geocodingCacheBoxName = 'geocoding_cache';
-  static const String overpassCacheBoxName = 'overpass_cache';
+  /// Single Hive box backing the engine's [HiveCacheStore].
+  static const String cacheBoxName = 'map_poster_cache';
 }

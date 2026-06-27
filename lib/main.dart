@@ -7,7 +7,6 @@ import 'package:map_to_poster/core/constants/app_constants.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  await Hive.openBox<dynamic>(AppConstants.geocodingCacheBoxName);
-  await Hive.openBox<dynamic>(AppConstants.overpassCacheBoxName);
+  await Hive.openBox<dynamic>(AppConstants.cacheBoxName);
   runApp(const ProviderScope(child: App()));
 }
