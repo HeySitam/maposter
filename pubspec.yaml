@@ -2,7 +2,7 @@ name: maposter
 description: >-
   Turn a city name into a minimalist OpenStreetMap poster: geocoding, Overpass
   map data, Mercator projection, CustomPainter rendering, and PNG/PDF export.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/HeySitam/maposter
 issue_tracker: https://github.com/HeySitam/maposter/issues
 topics:
@@ -26,8 +26,9 @@ dependencies:
   # Networking
   dio: ^5.8.0
 
-  # Fonts (rendering)
-  google_fonts: ^6.2.1
+  # Fonts (rendering). Wide range so older-Flutter consumers can stay on 6.x
+  # while newer setups pick up the latest.
+  google_fonts: ">=6.2.1 <9.0.0"
 
   # PDF export
   pdf: ^3.11.2
