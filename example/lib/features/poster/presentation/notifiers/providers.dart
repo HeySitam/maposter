@@ -30,14 +30,13 @@ final selectedThemeProvider = FutureProvider<MapTheme>((ref) {
 
 final geocodingProvider =
     FutureProvider.family<CityCoordinates, ({String city, String country})>(
-  (ref, args) =>
-      ref.watch(mapPosterEngineProvider).geocode(args.city, args.country),
-);
+      (ref, args) =>
+          ref.watch(mapPosterEngineProvider).geocode(args.city, args.country),
+    );
 
 final mapDataProvider =
     FutureProvider.family<MapData, ({LatLon center, double radiusMeters})>(
-  (ref, args) => ref.watch(mapPosterEngineProvider).fetchMapData(
-        args.center,
-        radiusMeters: args.radiusMeters,
-      ),
-);
+      (ref, args) => ref
+          .watch(mapPosterEngineProvider)
+          .fetchMapData(args.center, radiusMeters: args.radiusMeters),
+    );

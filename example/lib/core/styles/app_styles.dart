@@ -18,7 +18,11 @@ abstract final class AppStyles {
   /// Call this once in the root widget's [build] (after [MediaQuery] is available).
   static void init(BuildContext context) {
     final s = MediaQuery.of(context).size.shortestSide;
-    _scale = s > 1000 ? 1.2 : s > 800 ? 1.1 : 1.0;
+    _scale = s > 1000
+        ? 1.2
+        : s > 800
+        ? 1.1
+        : 1.0;
   }
 
   static AppInsets get insets => AppInsets(_scale);
@@ -80,61 +84,61 @@ class AppText {
   double _sp(double size) => size * _s;
 
   TextStyle get h1 => GoogleFonts.roboto(
-        fontSize: _sp(32),
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.5,
-        height: 1.2,
-      );
+    fontSize: _sp(32),
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.5,
+    height: 1.2,
+  );
 
   TextStyle get h2 => GoogleFonts.roboto(
-        fontSize: _sp(24),
-        fontWeight: FontWeight.w600,
-        letterSpacing: -0.3,
-        height: 1.3,
-      );
+    fontSize: _sp(24),
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.3,
+    height: 1.3,
+  );
 
   TextStyle get h3 => GoogleFonts.roboto(
-        fontSize: _sp(18),
-        fontWeight: FontWeight.w600,
-        height: 1.4,
-      );
+    fontSize: _sp(18),
+    fontWeight: FontWeight.w600,
+    height: 1.4,
+  );
 
   TextStyle get body => GoogleFonts.roboto(
-        fontSize: _sp(14),
-        fontWeight: FontWeight.w400,
-        height: 1.5,
-      );
+    fontSize: _sp(14),
+    fontWeight: FontWeight.w400,
+    height: 1.5,
+  );
 
   TextStyle get bodySmall => GoogleFonts.roboto(
-        fontSize: _sp(12),
-        fontWeight: FontWeight.w400,
-        height: 1.4,
-      );
+    fontSize: _sp(12),
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+  );
 
   TextStyle get label => GoogleFonts.roboto(
-        fontSize: _sp(11),
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.8,
-      );
+    fontSize: _sp(11),
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.8,
+  );
 
   TextStyle get btn => GoogleFonts.roboto(
-        fontSize: _sp(14),
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
-      );
+    fontSize: _sp(14),
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.5,
+  );
 
   // Poster-specific: city name displayed on the generated poster
   TextStyle get posterCity => GoogleFonts.roboto(
-        fontSize: _sp(28),
-        fontWeight: FontWeight.w300,
-        letterSpacing: 4,
-      );
+    fontSize: _sp(28),
+    fontWeight: FontWeight.w300,
+    letterSpacing: 4,
+  );
 
   TextStyle get posterCountry => GoogleFonts.roboto(
-        fontSize: _sp(12),
-        fontWeight: FontWeight.w400,
-        letterSpacing: 6,
-      );
+    fontSize: _sp(12),
+    fontWeight: FontWeight.w400,
+    letterSpacing: 6,
+  );
 }
 
 // ── Shadows ───────────────────────────────────────────────────────────────────
@@ -143,26 +147,26 @@ class AppShadows {
   const AppShadows();
 
   List<BoxShadow> get card => [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.4),
-          blurRadius: 16,
-          offset: const Offset(0, 4),
-        ),
-      ];
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.4),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
 
   List<BoxShadow> get elevated => [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.6),
-          blurRadius: 32,
-          offset: const Offset(0, 8),
-        ),
-      ];
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.6),
+      blurRadius: 32,
+      offset: const Offset(0, 8),
+    ),
+  ];
 
   List<Shadow> get text => [
-        Shadow(
-          color: Colors.black.withValues(alpha: 0.6),
-          blurRadius: 4,
-          offset: const Offset(0, 1),
-        ),
-      ];
+    Shadow(
+      color: Colors.black.withValues(alpha: 0.6),
+      blurRadius: 4,
+      offset: const Offset(0, 1),
+    ),
+  ];
 }

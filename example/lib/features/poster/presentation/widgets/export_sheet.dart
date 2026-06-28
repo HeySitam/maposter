@@ -62,9 +62,9 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
                 child: Text(
                   'Export poster',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -119,18 +119,15 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     );
   }
 
-  Future<void> _run(
-    _ExportAction action,
-    Future<void> Function() body,
-  ) async {
+  Future<void> _run(_ExportAction action, Future<void> Function() body) async {
     setState(() => _busy = action);
     try {
       await body();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _busy = null);
@@ -138,31 +135,29 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
   }
 
   MaposterPainter _buildPainter() => MaposterPainter(
-        mapData: widget.mapData,
-        theme: widget.theme,
-        cityName: widget.cityName,
-        countryName: widget.countryName,
-        latitude: widget.latitude,
-        longitude: widget.longitude,
-      );
+    mapData: widget.mapData,
+    theme: widget.theme,
+    cityName: widget.cityName,
+    countryName: widget.countryName,
+    latitude: widget.latitude,
+    longitude: widget.longitude,
+  );
 
   String _baseFilename() {
     final now = DateTime.now();
-    final stamp = '${now.year.toString().padLeft(4, '0')}'
+    final stamp =
+        '${now.year.toString().padLeft(4, '0')}'
         '${now.month.toString().padLeft(2, '0')}'
         '${now.day.toString().padLeft(2, '0')}_'
         '${now.hour.toString().padLeft(2, '0')}'
         '${now.minute.toString().padLeft(2, '0')}';
-    final safeCity =
-        widget.cityName.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '_');
+    final safeCity = widget.cityName.replaceAll(RegExp(r'[^A-Za-z0-9]+'), '_');
     return '${safeCity}_${widget.theme.id}_$stamp';
   }
 
-  Future<Uint8List> _renderPng() =>
-      ref.read(mapPosterEngineProvider).exportPng(
-            _buildPainter(),
-            ExportSheet.posterSize,
-          );
+  Future<Uint8List> _renderPng() => ref
+      .read(mapPosterEngineProvider)
+      .exportPng(_buildPainter(), ExportSheet.posterSize);
 
   Future<void> _saveToGallery() async {
     final hasAccess = await Gal.hasAccess();
@@ -175,9 +170,9 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     final bytes = await _renderPng();
     await Gal.putImageBytes(bytes, name: _baseFilename());
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Saved to Photos')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Saved to Photos')));
     Navigator.of(context).pop();
   }
 
@@ -186,10 +181,9 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/${_baseFilename()}.png');
     await file.writeAsBytes(bytes, flush: true);
-    await Share.shareXFiles(
-      [XFile(file.path, mimeType: 'image/png')],
-      text: '${widget.cityName} map poster',
-    );
+    await Share.shareXFiles([
+      XFile(file.path, mimeType: 'image/png'),
+    ], text: '${widget.cityName} map poster');
     if (!mounted) return;
     Navigator.of(context).pop();
   }
@@ -202,10 +196,9 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/${_baseFilename()}.pdf');
     await file.writeAsBytes(pdfBytes, flush: true);
-    await Share.shareXFiles(
-      [XFile(file.path, mimeType: 'application/pdf')],
-      text: '${widget.cityName} map poster',
-    );
+    await Share.shareXFiles([
+      XFile(file.path, mimeType: 'application/pdf'),
+    ], text: '${widget.cityName} map poster');
     if (!mounted) return;
     Navigator.of(context).pop();
   }

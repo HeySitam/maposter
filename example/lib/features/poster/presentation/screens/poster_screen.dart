@@ -44,7 +44,9 @@ class PosterScreen extends ConsumerWidget {
         child: Column(
           children: [
             Expanded(
-              child: ref.watch(selectedThemeProvider).when(
+              child: ref
+                  .watch(selectedThemeProvider)
+                  .when(
                     data: (theme) => Center(
                       child: AspectRatio(
                         aspectRatio: 3 / 4,
@@ -111,13 +113,14 @@ class _ThemePickerBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedId = ref.watch(selectedThemeIdProvider);
-    return ref.watch(allThemesProvider).when(
+    return ref
+        .watch(allThemesProvider)
+        .when(
           data: (themes) => SizedBox(
             height: 106,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               itemCount: themes.length,
               separatorBuilder: (_, __) => const SizedBox(width: 10),
               itemBuilder: (_, i) {

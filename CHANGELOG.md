@@ -7,6 +7,9 @@
   `MapDataProgress`, `MapDataStage`, `MapDataProgressCallback`.
 - Example: the demo now shows a labeled progress bar with per-stage status and
   an elapsed timer instead of a bare spinner.
+- Example: replace the free-text City/Country fields with cascading, searchable
+  Country → State → City dropdowns backed by the offline `country_state_city`
+  package, so every selection geocodes cleanly.
 
 ## 0.1.2
 

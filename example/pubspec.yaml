@@ -31,6 +31,9 @@ dependencies:
   share_plus: ^10.1.4
   gal: ^2.3.1
 
+  # Offline country / state / city data for the picker dropdowns
+  country_state_city: ^0.1.6
+
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
