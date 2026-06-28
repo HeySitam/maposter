@@ -10,7 +10,14 @@
 
 No state-management or storage dependency is forced on you, and caching is fully pluggable.
 
-<!-- Tip: drop a sample poster image here (e.g. docs/sample.png) for a stronger pub.dev page. -->
+## 🖼️ Gallery
+
+Real posters generated with maposter — each in a different bundled theme:
+
+|     |     |
+| :-: | :-: |
+| <img src="https://raw.githubusercontent.com/HeySitam/maposter/main/doc/posters/kolkata.png" width="330" alt="Kolkata, India — monochrome_blue theme"><br>**Kolkata** · `monochrome_blue` | <img src="https://raw.githubusercontent.com/HeySitam/maposter/main/doc/posters/dubai.png" width="330" alt="Dubai, UAE — midnight_blue theme"><br>**Dubai** · `midnight_blue` |
+| <img src="https://raw.githubusercontent.com/HeySitam/maposter/main/doc/posters/bangalore.png" width="330" alt="Bangalore, India — forest theme"><br>**Bangalore** · `forest` | <img src="https://raw.githubusercontent.com/HeySitam/maposter/main/doc/posters/alexandria.png" width="330" alt="Alexandria, Egypt — autumn theme"><br>**Alexandria** · `autumn` |
 
 ---
 
