@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:maposter/src/entities/map_data.dart';
+import 'package:maposter/src/entities/map_data_progress.dart';
 import 'package:maposter/src/utils/mercator.dart';
 
 abstract interface class MapDataRepository {
@@ -7,5 +8,6 @@ abstract interface class MapDataRepository {
     LatLon center,
     double radiusMeters, {
     CancelToken? token,
+    MapDataProgressCallback? onProgress,
   });
 }

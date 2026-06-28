@@ -11,6 +11,7 @@ import 'package:maposter/src/datasources/remote/nominatim_remote_datasource_impl
 import 'package:maposter/src/datasources/remote/overpass_remote_datasource_impl.dart';
 import 'package:maposter/src/entities/city_coordinates.dart';
 import 'package:maposter/src/entities/map_data.dart';
+import 'package:maposter/src/entities/map_data_progress.dart';
 import 'package:maposter/src/entities/map_theme.dart';
 import 'package:maposter/src/network/dio_client.dart';
 import 'package:maposter/src/network/rate_limiter.dart';
@@ -93,10 +94,12 @@ class MaposterEngine {
     LatLon center, {
     double? radiusMeters,
     CancelToken? token,
+    MapDataProgressCallback? onProgress,
   }) => _mapData.fetchMapData(
     center,
     radiusMeters ?? config.defaultRadiusMeters,
     token: token,
+    onProgress: onProgress,
   );
 
   // ── Themes ───────────────────────────────────────────────────────────────────

@@ -235,6 +235,26 @@ final future = engine.fetchMapData(center, token: token);
 token.cancel();
 ```
 
+## ⏳ Progress reporting
+
+The first fetch for a city runs several slow, rate-limited Overpass queries, so
+a bare spinner can feel stuck. Pass `onProgress` to `fetchMapData` to drive a
+staged progress UI — it fires as each stage (roads → water → parks) begins, and
+flags stages served from cache (which resolve instantly):
+
+```dart
+await engine.fetchMapData(
+  center,
+  onProgress: (p) {
+    // p.stage is MapDataStage.roads | .water | .parks
+    // p.index / p.total → e.g. 2 of 3;  p.fromCache → instant?
+    print('${p.stage.name} (${p.index + 1}/${p.total})');
+  },
+);
+```
+
+See [`example/`](example) for a labeled progress bar built on this.
+
 ---
 
 ## 🧯 Error handling

@@ -2,7 +2,7 @@ name: maposter
 description: >-
   Turn a city name into a minimalist OpenStreetMap poster: geocoding, Overpass
   map data, Mercator projection, CustomPainter rendering, and PNG/PDF export.
-version: 0.1.2
+version: 0.2.0
 repository: https://github.com/HeySitam/maposter
 issue_tracker: https://github.com/HeySitam/maposter/issues
 topics:

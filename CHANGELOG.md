@@ -1,3 +1,13 @@
+## 0.2.0
+
+- Add an optional `onProgress` callback to `MaposterEngine.fetchMapData`
+  (and the underlying repository), reporting each Overpass stage
+  (roads → water → parks) as it begins, with a `fromCache` flag. Lets apps
+  show staged progress during the slow first-time fetch of a city. New exports:
+  `MapDataProgress`, `MapDataStage`, `MapDataProgressCallback`.
+- Example: the demo now shows a labeled progress bar with per-stage status and
+  an elapsed timer instead of a bare spinner.
+
 ## 0.1.2
 
 - Docs: use a version-less install snippet in the README so it never goes stale.

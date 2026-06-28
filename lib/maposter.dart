@@ -13,6 +13,8 @@ export 'src/config/maposter_config.dart';
 export 'src/entities/city_coordinates.dart';
 export 'src/entities/map_data.dart'
     show MapData, RoadSegment, MapFeature, RoadType, FeatureType;
+export 'src/entities/map_data_progress.dart'
+    show MapDataProgress, MapDataStage, MapDataProgressCallback;
 export 'src/entities/map_theme.dart' show MapTheme;
 export 'src/errors/app_exception.dart';
 export 'src/maposter_base.dart' show MaposterEngine;

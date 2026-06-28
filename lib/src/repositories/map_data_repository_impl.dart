@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:maposter/src/datasources/local/overpass_local_datasource.dart';
 import 'package:maposter/src/datasources/remote/overpass_remote_datasource.dart';
 import 'package:maposter/src/entities/map_data.dart';
+import 'package:maposter/src/entities/map_data_progress.dart';
 import 'package:maposter/src/repositories/map_data_repository.dart';
 import 'package:maposter/src/utils/mercator.dart';
 
@@ -16,6 +17,7 @@ class MapDataRepositoryImpl implements MapDataRepository {
     LatLon center,
     double radiusMeters, {
     CancelToken? token,
+    MapDataProgressCallback? onProgress,
   }) async {
     final (lat, lon) = center;
 
@@ -28,24 +30,48 @@ class MapDataRepositoryImpl implements MapDataRepository {
     final waterKey = '${prefix}_water';
     final parksKey = '${prefix}_parks';
 
-    // Cache-aside: check local first, then remote
+    // Cache-aside: check local first, then remote. Each stage reports progress
+    // before it runs, flagging whether it will be served from cache (instant).
     final cachedRoads = await _local.getRoads(roadsKey);
-    final cachedWater = await _local.getFeatures(waterKey);
-    final cachedParks = await _local.getFeatures(parksKey);
-
+    onProgress?.call(
+      MapDataProgress(
+        stage: MapDataStage.roads,
+        index: 0,
+        total: 3,
+        fromCache: cachedRoads != null,
+      ),
+    );
     final roads =
         cachedRoads ??
         await _remote.fetchRoads(center, compensated, token: token);
+    if (cachedRoads == null) await _local.putRoads(roadsKey, roads);
+
+    final cachedWater = await _local.getFeatures(waterKey);
+    onProgress?.call(
+      MapDataProgress(
+        stage: MapDataStage.water,
+        index: 1,
+        total: 3,
+        fromCache: cachedWater != null,
+      ),
+    );
     final waterFeatures =
         cachedWater ??
         await _remote.fetchWaterFeatures(center, compensated, token: token);
+    if (cachedWater == null) await _local.putFeatures(waterKey, waterFeatures);
+
+    final cachedParks = await _local.getFeatures(parksKey);
+    onProgress?.call(
+      MapDataProgress(
+        stage: MapDataStage.parks,
+        index: 2,
+        total: 3,
+        fromCache: cachedParks != null,
+      ),
+    );
     final parkFeatures =
         cachedParks ??
         await _remote.fetchParkFeatures(center, compensated, token: token);
-
-    // Persist any newly fetched data
-    if (cachedRoads == null) await _local.putRoads(roadsKey, roads);
-    if (cachedWater == null) await _local.putFeatures(waterKey, waterFeatures);
     if (cachedParks == null) await _local.putFeatures(parksKey, parkFeatures);
 
     return MapData(
